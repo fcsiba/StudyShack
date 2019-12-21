@@ -158,8 +158,8 @@ export default class WelcomeScreen extends Component {
 
 WelcomeScreen.defaultProps = {
   illustrations: [
-    // { id: 1, source: require('../assets/images/illustration_1.png') },
-    // { id: 2, source: require('../assets/images/illustration_2.png') },
+    { id: 1, source: {uri: 'https://cdn.dribbble.com/users/1355613/screenshots/8328501/media/1c5712771d9cf80d249b15ab40dbfd54.jpg'} },
+    { id: 2, source: {uri: 'https://cdn.dribbble.com/users/1355613/screenshots/8363210/media/8fdc13f2d3a57e411d82c7e554386662.jpg'} },
     // { id: 3, source: require('../assets/images/illustration_3.png') },
   ],
 };

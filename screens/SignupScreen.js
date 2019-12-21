@@ -139,13 +139,13 @@ export default class SignupScreen extends Component {
                     // }
                 })
                 // firebaseUtils.
-            }).then(() => {
+            }).catch((reason) => {
                 this.setState({ loading: false });
                 showMessage({
                     message: `${'Error'}`,
                     autoHide: false,
                     type: 'danger',
-                    description: `${'User can not be created at the moment please concerned department'}`,
+                    description: `${ reason || 'User can not be created at the moment please contact concerned department'}`,
                 })
             })
 
