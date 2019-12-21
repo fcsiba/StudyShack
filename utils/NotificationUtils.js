@@ -1,9 +1,8 @@
 import React from 'react';
-import { View, Dimensions, } from 'react-native';
 import { Notifications } from 'expo';
 import * as Permissions from 'expo-permissions';
-import Constants from 'expo-constants';
 import { showMessage, hideMessage } from 'react-native-flash-message';
+import { appStateManager } from '../singletons';
 
 class NotificationUtils {
 
@@ -26,9 +25,9 @@ class NotificationUtils {
             });
             return undefined;
         }
-        let token = await Notifications.getExpoPushTokenAsync();
-        console.log({ expotoken: token })
-        return token;
+        Notifications.getExpoPushTokenAsync().then((value) => {
+            appStateManager.user.token = value
+        });
     }
 
 }

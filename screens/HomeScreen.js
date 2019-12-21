@@ -15,8 +15,12 @@ import {
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Feather, Ionicons, Entypo, MaterialCommunityIcons } from '@expo/vector-icons';
-import { firebaseUtils } from '../utils'
+import { firebaseUtils, arrayUtils, notificationUtils } from '../utils'
 import { appStateManager } from '../singletons'
+
+import { SharedElement } from 'react-navigation-shared-element';
+import { Notifications } from 'expo'
+
 
 export default class HomeScreen extends React.Component {
 
@@ -34,11 +38,11 @@ export default class HomeScreen extends React.Component {
           },
         }),
       },
-      headerLeft: (<TouchableOpacity style={{ height: 34, aspectRatio: 1, marginHorizontal: 16, marginTop: 8, justifyContent: 'center', alignItems: 'center' }} onPress={()=>navigation.navigate('Profile')} >
+      headerLeft: (<TouchableOpacity style={{ height: 34, aspectRatio: 1, marginHorizontal: 16, marginTop: 8, justifyContent: 'center', alignItems: 'center' }} onPress={() => navigation.navigate('Profile')} >
         {/* <Feather name="menu" size={25} color="black" /> */}
-        <Image style={{height: 34, aspectRatio: 1, borderRadius: 17, borderWidth: 2, borderColor: 'white'}} source={{uri: 'https://i.pinimg.com/originals/00/f3/ba/00f3baed741806ab1cc74e094b30824b.jpg'}} />
+        <Image style={{ height: 34, aspectRatio: 1, borderRadius: 17, borderWidth: 2, borderColor: 'white' }} source={{ uri: 'https://i.pinimg.com/originals/00/f3/ba/00f3baed741806ab1cc74e094b30824b.jpg' }} />
       </TouchableOpacity>),
-      headerRight: (<TouchableOpacity style={{ height: 35, aspectRatio: 1, marginHorizontal: 16, marginTop: 8, justifyContent: 'center', alignItems: 'center' }} onPress={()=>navigation.navigate('Conversations')} >
+      headerRight: (<TouchableOpacity style={{ height: 35, aspectRatio: 1, marginHorizontal: 16, marginTop: 8, justifyContent: 'center', alignItems: 'center' }} onPress={() => navigation.navigate('Conversations')} >
         <MaterialCommunityIcons name="message-outline" size={25} color="black" />
       </TouchableOpacity>)
       // header: null
@@ -53,83 +57,44 @@ export default class HomeScreen extends React.Component {
       selectedIndex: 0,
     }
 
-    this.items = [
-      {
-        title: 'Susan',
-        image: 'https://i.pinimg.com/originals/00/f3/ba/00f3baed741806ab1cc74e094b30824b.jpg',
-        latlong: {
-          latitude: 24.933264,
-          longitude: 67.120920,
-        },
-        subjects: ["English", "Maths", "Chemistry"],
-        isOnline: false,
-        rate: {
-          price: 23,
-          currancy: 'PKR',
-          period: 'Hourly'
-        },
-        distance: 100,
-      },
-      {
-        title: 'Abdul Kareem',
-        image: 'https://i.pinimg.com/originals/00/f3/ba/00f3baed741806ab1cc74e094b30824b.jpg',
-        latlong: {
-          latitude: 24.9418733,
-          longitude: 67.1121096,
-        },
-        subjects: ["English", "Maths", "Chemistry"],
-        isOnline: false,
-        rate: {
-          price: 23,
-          currancy: 'PKR',
-          period: 'Hourly'
-        },
-        distance: 550,
-      },
-      {
-        title: 'Abdul Kareem',
-        image: 'https://i.pinimg.com/originals/00/f3/ba/00f3baed741806ab1cc74e094b30824b.jpg',
-        latlong: {
-          latitude: 24.9218733,
-          longitude: 67.1121096,
-        },
-        subjects: ["English", "Maths", "Chemistry"],
-        isOnline: false,
-        rate: {
-          price: 23,
-          currancy: 'PKR',
-          period: 'Hourly'
-        },
-        distance: 1000,
-      },
-      {
-        title: 'Abdul Kareem',
-        image: 'https://i.pinimg.com/originals/00/f3/ba/00f3baed741806ab1cc74e094b30824b.jpg',
-        latlong: {
-          latitude: 24.9418733,
-          longitude: 67.1221096,
-        },
-        subjects: ["English", "Maths", "Chemistry"],
-        isOnline: false,
-        rate: {
-          price: 23,
-          currancy: 'PKR',
-          period: 'Hourly'
-        },
-        distance: 250,
-      },
-    ]
+    this.selectedPriceRange = {
+      minimum: 0,
+      maximum: 20000,
+    }
+    this.selectedSubjects = [] //"English", "Maths", "Science", "Chemistry", "Physics", "Biology", "Economics", "Urdu", "Islamic Studies", "Pakistan Studies", "Arabic"
+    this.selectedDistance = 50
+
+    this.items = []
+
     this.handleViewableItemsChanged = this.handleViewableItemsChanged.bind(this)
     this.viewabilityConfig = { viewAreaCoveragePercentThreshold: 30 }
 
   }
 
-  componentDidMount(){
+  componentDidMount() {
+    notificationUtils.registerForPushNotificationsAsync()
     this.offlineFunction()
+    // Notifications.getExpoPushTokenAsync().then((value) => {
+    //   console.log(value)
+    // })
+
+    // firebaseUtils.geoFire.set({
+    //   "-LwXGQx4PFC99nT6_w8Q": [24.933264, 67.110920],
+    //   "-LwXGZ7JANTmclm7Zxg1": [24.913264, 67.220920],
+    //   "-LwXGfGV4DvzR8kpZPGk": [24.903264, 67.300920],
+    //   "-LwXGoypNN8jqmlNp2Za": [24.923264, 67.430920],
+    //   "-LwXGrMFHB4d_GT2cA7J": [24.943264, 67.540920],
+    // }).then(function() {
+    //   console.log("Provided keys have been added to GeoFire");
+    // }, function(error) {
+    //   console.log("Error: " + error);
+    // });
+    this.refresh(this.selectedSubjects, this.selectedDistance, this.selectedPriceRange.minimum, this.selectedPriceRange.maximum)
+
   }
 
   offlineFunction() {
-    var myConnectionsRef = firebaseUtils.FireBase.ref(`users/connections`);
+    var myConnectionsRef = firebaseUtils.FireBase.ref(`connections/${appStateManager.user.type}s`);
     var connectedRef = firebaseUtils.FireBase.ref('.info/connected');
     connectedRef.on('value', function (snap) {
       if (snap.val() === true) {
@@ -139,17 +104,71 @@ export default class HomeScreen extends React.Component {
           name: appStateManager.user.name,
           image: appStateManager.user.image,
           isConnected: true,
-          lastOnline: Date()
+          lastOnline: Date(),
+          token: appStateManager.user.token
         });
         con.onDisconnect().set({
           id: appStateManager.user.id,
           name: appStateManager.user.name,
           image: appStateManager.user.image,
           isConnected: false,
-          lastOnline: Date()
+          lastOnline: Date(),
+          token: appStateManager.user.token
         });
       }
     });
+  }
+
+  refresh=(subjects, distance, minimum, maximum)=> {
+
+    this.selectedDistance = distance
+    this.selectedSubjects = subjects
+    this.selectedPriceRange.minimum = minimum
+    this.selectedPriceRange.maximum = maximum
+
+    if (this.onReadyRegistration !== undefined && this.onReadyRegistration !== null){
+      this.onReadyRegistration.cancel()
+      this.items = []
+    }
+
+    this.geoQuery = firebaseUtils.geoFire.query({
+      center: [24.9224346, 67.1497583],
+      radius: distance
+    });
+
+    this.onReadyRegistration = this.geoQuery.on("key_entered", (key, location, distance) => {
+      // console.log(key + " exited query to " + location + " (" + distance + " km from center)");
+      console.log(location)
+      firebaseUtils.teachersRef.child(key).once("value", (snapshot) => {
+        if (snapshot.val() !== undefined) {
+          var val = snapshot.val()
+
+          if (subjects.length != 0 && !arrayUtils.arraysEqual(subjects, val.subjects)) {
+            return
+          }
+          if (!(val.rate.price > minimum)) {
+            return
+          }
+          if (maximum != 0 && !(val.rate.price < maximum)) {
+            return
+          }
+          val.distance = distance.toFixed(1)
+          val.latlong = {
+            latitude: location[0],
+            longitude: location[1]
+          }
+          val.id = key
+
+          this.items.push(val)
+          this.setState({ loaded: true })
+        }
+      })
+    })
+  }
+
+
+  getTeachersAround() {
+
   }
 
   onScrollAnimationEnd() {
@@ -167,7 +186,7 @@ export default class HomeScreen extends React.Component {
   }
 
   updatedata() {
-    this.setState({ loaded: 'true' })
+    this.setState({ loaded: true })
   }
 
   onMarkerPress(index) {
@@ -180,26 +199,32 @@ export default class HomeScreen extends React.Component {
   }
 
   onSearchbarTap() {
-    this.props.navigation.navigate('Search')
+    this.props.navigation.navigate('Search', {
+      selectedPriceMinimum: this.selectedPriceRange.minimum,
+      selectedPriceMaximum: this.selectedPriceRange.maximum,
+      selectedSubjects: this.selectedSubjects,
+      selectedDistance: this.selectedDistance,
+      onGoBack: this.refresh,
+    })
   }
 
-  onItemPress(item, index){
-    this.props.navigation.navigate('Details')
+  onItemPress(item, index) {
+    this.props.navigation.navigate('Details', item)
   }
 
   renderMarker(image, index) {
     return (
       // <View>
-        <View style={[styles.customMarkerStyle, {backgroundColor: (index === this.state.selectedIndex) ? 'white' : 'black' }]} >
-          <Image style={{ height: 40, borderRadius: 20, aspectRatio: 1, }} source={{ uri: image }} />
-        </View>
+      <View style={[styles.customMarkerStyle, { backgroundColor: (index === this.state.selectedIndex) ? 'white' : 'black' }]} >
+        <Image style={{ height: 40, borderRadius: 20, aspectRatio: 1, }} source={{ uri: image }} />
+      </View>
       // </View>
     );
   }
 
-  renderFooter(){
-    return(
-      <View style={{width: Dimensions.get('window').width - 180}}>
+  renderFooter() {
+    return (
+      <View style={{ width: Dimensions.get('window').width - 180 }}>
 
       </View>
     )
@@ -209,7 +234,7 @@ export default class HomeScreen extends React.Component {
     var isSelected = (this.state.selectedIndex === index)
     return (
       <View style={{ width: 180, height: 160, overflow: 'visible' }}>
-        <TouchableOpacity style={[styles.itemView, {borderWidth: 0}]} activeOpacity={0.9} onPress={() => this.onItemPress(item, index)}>
+        <TouchableOpacity style={[styles.itemView, { borderWidth: 0 }]} activeOpacity={0.9} onPress={() => this.onItemPress(item, index)}>
           <View style={styles.itemImageView}>
             <Image style={{ height: 70, aspectRatio: 1, borderRadius: 35, borderWidth: 3, borderColor: isSelected ? 'white' : 'black' }} source={{ uri: item.image }} />
           </View>
@@ -248,7 +273,7 @@ export default class HomeScreen extends React.Component {
             >
               {this.renderMarker(value.image, index)}
               <View style={{ height: 6, aspectRatio: 1, borderRadius: 3, backgroundColor: 'black' }} ></View>
-              <Text style={{fontSize: 10, fontWeight: '500', textAlign: 'center', marginTop: 2}} >{value.distance} m</Text>
+              <Text style={{ fontSize: 10, fontWeight: '500', textAlign: 'center', marginTop: 2 }} >{value.distance} km</Text>
             </Marker>)
           })
 
@@ -300,11 +325,13 @@ export default class HomeScreen extends React.Component {
           {/* <View style={{ justifyContent: 'center', alignItems: 'center', height: 44, width: '100%' }}>
               <Text>MAP</Text>
             </View> */}
-          <TouchableOpacity style={styles.searchBarStyle} activeOpacity={0.95} onPress={() => this.onSearchbarTap.bind(this)()}>
-            <Feather name="search" size={20} color="black" />
-            <Text style={{ color: 'gray', fontWeight: '500', fontSize: 17, marginLeft: 16, flexGrow: 1, textAlign: 'left' }}>Search</Text>
-            <Feather name="filter" size={20} color="black" />
-          </TouchableOpacity>
+          <SharedElement id={`searchBar`}>
+            <TouchableOpacity style={styles.searchBarStyle} activeOpacity={0.95} onPress={() => this.onSearchbarTap.bind(this)()}>
+              <Feather name="search" size={20} color="black" />
+              <Text style={{ color: 'gray', fontWeight: '500', fontSize: 17, marginLeft: 16, flexGrow: 1, textAlign: 'left' }}>Search</Text>
+              <Feather name="filter" size={20} color="black" />
+            </TouchableOpacity>
+          </SharedElement>
         </SafeAreaView>
         {/* </View> */}
 
@@ -358,7 +385,7 @@ const styles = StyleSheet.create({
       },
       android: {
         elevation: 6,
-        
+
       },
     }),
   },
@@ -381,7 +408,7 @@ const styles = StyleSheet.create({
       },
       android: {
         elevation: 3,
-        
+
       },
     }),
   },
@@ -731,3 +758,8 @@ const customStyle = [
     ]
   }
 ];
+
+
+
+
+

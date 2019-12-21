@@ -11,11 +11,13 @@ import {
     TextInput,
     View,
     KeyboardAvoidingView,
-
+    ActivityIndicator
 } from 'react-native';
 import { ExpoLinksView } from '@expo/samples';
 import { Feather } from '@expo/vector-icons';
 import { FlatList } from 'react-native-gesture-handler';
+
+import { SharedElement } from 'react-navigation-shared-element';
 
 export default class SearchScreen extends React.Component {
 
@@ -37,23 +39,43 @@ export default class SearchScreen extends React.Component {
         };
     }
 
+    static sharedElements = (navigation, otherNavigation, showing) => {
+        return [{
+            id: `searchBar`,
+            // animation: 'fade'
+            // resize: 'clip'
+            align: 'left-top'
+          }];
+    };
+
     constructor(props) {
         super(props)
 
-        this.distance = [500, 1000, 2000, 5000, 10000, 15000, 20000, 30000, 50000]
+        this.distance = [.5, 1, 2, 5, 10, 15, 20, 30, 50, 100, 200]
         this.subjects = ["English", "Maths", "Science", "Chemistry", "Physics", "Biology", "Economics", "Urdu", "Islamic Studies", "Pakistan Studies", "Arabic"]
         this.price = {
             minimum: 100,
             maximum: 20000,
         }
+
+        const {params} = this.props.navigation.state
+
         this.state = {
-            selectedSubjects: ["English", "Maths", "Science", "Chemistry", "Physics", "Biology", "Economics", "Urdu", "Islamic Studies", "Pakistan Studies", "Arabic"],
-            selectedDistance: 5000,
-            selectedPriceRange: {
+            selectedSubjects: params.selectedSubjects || ["English", "Maths", "Science", "Chemistry", "Physics", "Biology", "Economics", "Urdu", "Islamic Studies", "Pakistan Studies", "Arabic"],
+            selectedDistance: params.selectedDistance || 5,
+            selectedPriceRange: params.selectedPriceRange || {
                 minimum: 100,
                 maximum: 20000,
             },
+            selectedPriceMinimum: 0,
+            selectedPriceMaximum: 20000,
+            loading: false
         }
+    }
+
+    searchAction(){
+        this.props.navigation.state.params.onGoBack(this.state.selectedSubjects, this.state.selectedDistance, this.state.selectedPriceMinimum, this.state.selectedPriceMaximum);
+        this.props.navigation.goBack();
     }
 
     selectDistanceItem(item) {
@@ -68,37 +90,27 @@ export default class SearchScreen extends React.Component {
         return (
             <TouchableOpacity key={`${index}`} style={{ marginHorizontal: 4, marginVertical: 10, paddingHorizontal: 10, paddingVertical: 6, backgroundColor: isSelected ? 'black' : 'white', borderRadius: 4, borderWidth: 1, borderColor: isSelected ? 'black' : 'gray' }}
                 onPress={() => this.selectDistanceItem(item)} activeOpacity={0.8}>
-                <Text style={{ fontSize: 16, color: isSelected ? 'white' : 'gray' }} >{item} m</Text>
+                <Text style={{ fontSize: 16, color: isSelected ? 'white' : 'gray' }} >{item} km</Text>
             </TouchableOpacity>
         );
     }
 
     selectSubjectItem(item) {
         let tempArray = this.state.selectedSubjects
-        // let contains = tempArray.indexOf((value, index) => {
-        //     console.log(`value ${value}`)
-        //     console.log(`item ${item}`)
-        //     console.log(`index ${index}`)
-        //     return value === item
-        // });
         let contains = tempArray.indexOf(item)
-        console.log(contains)
         if (contains !== -1) {
-            console.log('constains')
             tempArray.splice(contains, 1);
             let array = tempArray
             this.setState({
                 selectedSubjects: array
             })
         } else {
-            console.log('does not constains')
             tempArray.push(item)
             let array = tempArray;
             this.setState({
                 selectedSubjects: array
             })
         }
-
     }
 
     renderSubjectItem({ item, index }) {
@@ -124,24 +136,27 @@ export default class SearchScreen extends React.Component {
                 <ScrollView style={{ width: Dimensions.get('window').width }} stickyHeaderIndices={[]} keyboardDismissMode={'interactive'}>
 
                     <View style={{ width: '100%', alignItems: 'center' }} >
-                        <View style={styles.searchBarStyle}>
-                            <Feather name="search" size={20} color="black" />
-                            <TextInput style={{ color: 'gray', fontWeight: '500', fontSize: 17, height: '100%', marginLeft: 16, marginRight: 16, flexGrow: 1 }}
-                                placeholder={'Search'}
-                                ref={textInput => this.textInput = textInput}
-                                // autoFocus={true}
-                                clearButtonMode={'while-editing'}
-                            />
-                        </View>
+                        <SharedElement id={`searchBar`}>
+                            <View style={styles.searchBarStyle}>
+                                <Feather name="search" size={20} color="black" />
+                                <TextInput style={{ color: 'gray', fontWeight: '500', fontSize: 17, height: '100%', marginLeft: 16, marginRight: 16, flexGrow: 1 }}
+                                    placeholder={'Search'}
+                                    ref={textInput => this.textInput = textInput}
+                                    // autoFocus={true}
+                                    clearButtonMode={'while-editing'}
+                                />
+                            </View>
+                        </SharedElement>
                     </View>
+                    
 
                     <View style={{ marginTop: 20 }} >
                         <Text style={styles.titleStyle} >Price</Text>
                         <View style={{ alignSelf: 'flex-start', marginHorizontal: 20, flexDirection: 'row' }}  >
                             <TextInput style={{ marginHorizontal: 4, marginVertical: 10, paddingHorizontal: 10, paddingVertical: 6, fontSize: 16, minWidth: 100, maxWidth: 160, borderRadius: 4, borderWidth: 1, borderColor: 'black', backgroundColor: 'white' }}
-                                placeholder={'From'} keyboardType={'number-pad'}  maxLength = {5} />
+                                placeholder={'From'} keyboardType={'number-pad'} maxLength={5} defaultValue={this.state.selectedPriceMinimum} onChangeText={text => this.setState({ selectedPriceMinimum: text })} />
                             <TextInput style={{ marginHorizontal: 4, marginVertical: 10, paddingHorizontal: 10, paddingVertical: 6, fontSize: 16, minWidth: 100, maxWidth: 160, borderRadius: 4, borderWidth: 1, borderColor: 'black', backgroundColor: 'white' }}
-                                placeholder={'To'}  keyboardType={'number-pad'}  maxLength = {5} />
+                                placeholder={'To'} keyboardType={'number-pad'} maxLength={5} defaultValue={this.state.selectedPriceMaximum} onChangeText={text => this.setState({ selectedPriceMaximum: text })}/>
                         </View>
                     </View>
 
@@ -159,7 +174,7 @@ export default class SearchScreen extends React.Component {
                             // ListHeaderComponent={() => <View style={{ width: 20 }} />}
                             // ListFooterComponent={() => <View style={{ width: 20 }} />}
                             showsHorizontalScrollIndicator={false}
-                            numColumns={3}
+                            numColumns={4}
 
                         />
                     </View>
@@ -173,17 +188,17 @@ export default class SearchScreen extends React.Component {
                             data={this.subjects}
                             renderItem={this.renderSubjectItem.bind(this)}
                             keyExtractor={(item, index) => `${index}`}
-                            // horizontal={true}
-                            // ListHeaderComponent={() => <View style={{ width: 20 }} />}
-                            // ListFooterComponent={() => <View style={{ width: 20 }} />}
                             showsHorizontalScrollIndicator={false}
                             numColumns={3}
                         />
                     </View>
 
                     <View style={{ width: '100%', alignItems: 'center', zIndex: 2, marginBottom: 30 }} >
-                        <TouchableOpacity style={styles.buttonStyle} >
+                        <TouchableOpacity style={styles.buttonStyle} onPress={() => this.searchAction()} >
+                        {this.state.loading ?
+                                <ActivityIndicator size="small" color="white" /> :
                             <Text style={{ color: 'white', fontSize: 18, fontWeight: '500' }}>Search</Text>
+                        }
                         </TouchableOpacity>
                     </View>
 

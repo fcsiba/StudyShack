@@ -2,10 +2,22 @@ import { AppLoading } from 'expo';
 import { Asset } from 'expo-asset';
 import * as Font from 'expo-font';
 import React, { useState } from 'react';
-import { Platform, StatusBar, StyleSheet, View } from 'react-native';
+import { Platform, StatusBar, StyleSheet, View, YellowBox } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
+import FlashMessage, { showMessage, hideMessage } from "react-native-flash-message";
+
+YellowBox.ignoreWarnings([
+  'Unrecognized WebSocket connection option(s) `agent`, `perMessageDeflate`, `pfx`, `key`, `passphrase`, `cert`, `ca`, `ciphers`, `rejectUnauthorized`. Did you mean to put these under `headers`?',
+  'source.uri should not be an empty string',
+  'Require cycle: utils/index.js -> utils/NotificationUtils.js -> singletons/index.js -> singletons/AppStateManager.js -> utils/index.js',
+  'Require cycles are allowed, but can result in uninitialized values. Consider refactoring to remove the need for a cycle.'
+
+
+]);
+
 import AppNavigator from './navigation/AppNavigator';
+import { notificationUtils } from './utils';
 
 export default function App(props) {
   const [isLoadingComplete, setLoadingComplete] = useState(false);
@@ -19,10 +31,14 @@ export default function App(props) {
       />
     );
   } else {
+
+    notificationUtils.registerForPushNotificationsAsync()
+
     return (
       <View style={styles.container}>
         {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
         <AppNavigator />
+        <FlashMessage position='top' animated={true} />
       </View>
     );
   }

@@ -3,6 +3,7 @@ import { createAppContainer, createSwitchNavigator } from 'react-navigation';
 
 import MainTabNavigator from './MainTabNavigator';
 import AuthNavigator from './AuthNavigator';
+import TeacherNavigator from './TeacherNavigator';
 
 export default createAppContainer(
   createSwitchNavigator({
@@ -10,5 +11,6 @@ export default createAppContainer(
     // Read more at https://reactnavigation.org/docs/en/auth-flow.html
     Auth: AuthNavigator,
     Main: MainTabNavigator,
+    Teacher: TeacherNavigator,
   })
 );

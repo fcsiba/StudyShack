@@ -15,9 +15,9 @@ export default class ConversationItem extends React.Component {
 
     render() {
         const item = this.props.item;
-        const name = item.name;
+        const name = item.name || '';
         const image = item.image || 'https://cdn3.iconfinder.com/data/icons/social-media-chat-1/512/GroupMe-128.png';
-        const message = item.message;
+        const value = item.value || '';
         const time = item.time;
 
         return (
@@ -27,7 +27,7 @@ export default class ConversationItem extends React.Component {
                 </TouchableHighlight>
                 <View style={styles.textStyleView}>
                     <Text style={{ fontSize: 16, fontWeight: '500' }}>{`${name}`}</Text>
-                    <Text style={{ fontSize: 15, color: '#555' }}>{`${message}`}</Text>
+                    <Text style={{ fontSize: 15, color: '#555' }}>{`${value}`}</Text>
                 </View>
                 <View style={{ flex: 2, flexDirection: 'column' }}>
                     {/* <Text style={styles.unreadMessages}>{'1'}</Text> */}

@@ -1,5 +1,6 @@
 
-import firebase, {analytics, initializeApp, database} from 'firebase';
+import firebase, {analytics, initializeApp, database, auth} from 'firebase';
+import { GeoFire } from 'geofire'
 // import Base64 from 'base-64';
 
 // var firebaseConfig = {
@@ -36,6 +37,15 @@ class FirebaseUtils {
     }
     
     FireBase = database();
+    Auth = auth();
+
+    geoFire = new GeoFire(database().ref().child("geofire").child("teachers"));
+
+    teachersRef = database().ref().child('teachers')
+
+    bookingRef = database().ref().child('booking')
+
+    
 
     // async uploadImage(uri) {
     //     const response = await fetch(uri);

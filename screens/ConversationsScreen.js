@@ -3,6 +3,7 @@ import {
     Dimensions,
     ScrollView,
     StyleSheet,
+    Image,
     Platform,
     FlatList,
     SectionList,
@@ -54,25 +55,12 @@ export default class ConversationsScreen extends React.Component {
     }
 
     componentDidMount() {
-        this.handleRefresh()
         this.observeConnectedUsers()
         this.getChatHeads()
     }
 
-    handleRefresh = () => {
-        // this.setState({
-        //     isRefreshing: true,
-        // }, () => {
-
-        // });
-    };
-
-    handleLoadMore = () => {
-        console.log("reloading data ")
-    };
-
     observeConnectedUsers() {
-        firebaseUtils.FireBase.ref(`users/connections`).orderByChild('isConnected').limitToLast(50).on('value', snapshot => {
+        firebaseUtils.FireBase.ref(`connections/${appStateManager.user.type}s`).orderByChild('isConnected').limitToLast(50).on('value', snapshot => {
             var array = []
             snapshot.forEach(a => {
                 if (a.val().id !== appStateManager.user.id) {
@@ -85,13 +73,11 @@ export default class ConversationsScreen extends React.Component {
     }
 
     getChatHeads = async () => {
-        firebaseUtils.FireBase.ref(`Users/${appStateManager.user.id}/ChatHeads`).on('value', snapshot => {
+        firebaseUtils.FireBase.ref(`chat/${appStateManager.user.id}/conversations`).on('value', snapshot => {
+            console.log(snapshot)
             var array = []
             snapshot.forEach(a => {
-                const incomingMessage = {
-                    ...a.val(),
-                };
-                array.push(incomingMessage);
+                array.push(a.val());
             });
             this.state.items[0].data = array
             this.setState({ items: this.state.items })
@@ -102,35 +88,35 @@ export default class ConversationsScreen extends React.Component {
 
     _onPress = (item, index, section) => {
         
-        if (section.title === 'Individual Chats') {
+        // if (section.title === 'Individual Chats') {
             const { navigate } = this.props.navigation;
-            navigate('Conversation', { item: item, type: 'individual' });
-        }
+            navigate('Chat', { item: item, type: item.type || appStateManager.user.type || 'user' });
+        // }
     }
 
-    _onHeaderItemPress = (item, index) => {
-        let ind = this.state.items[0].data.findIndex(value => value.id.includes(item.id))
-        if (ind > -1) {
-            let titem = this.state.items[0].data[ind]
-            const { navigate } = this.props.navigation;
-            navigate('Conversation', { item: titem, type: 'individual' });
-            return;
-        }
-        let mitem = {
-            id: item.id,
-            name: item.name,
-            message: '',
-            time: '',
-            image: item.image
-        }
+    _onHeaderItemPress = (item) => {
+        // let ind = this.state.items[0].data.findIndex(value => value.id.includes(item.id))
+        // if (ind > -1) {
+        //     let titem = this.state.items[0].data[ind]
+        //     const { navigate } = this.props.navigation;
+        //     navigate('Conversation', { item: titem, type: 'individual' });
+        //     return;
+        // }
+        // let mitem = {
+        //     id: item.id,
+        //     name: item.name,
+        //     value: '',
+        //     time: '',
+        //     image: item.image
+        // }
         const { navigate } = this.props.navigation;
-        navigate('Conversation', { item: mitem, type: 'new' });
+        navigate('Chat', { item: item, type: appStateManager.user.type });
     }
 
     _renderHeaderItem = ({ item, index }) => {
         var isConnected = item.isConnected || false
         return (
-            <TouchableOpacity onPress={() => this._onHeaderItemPress.bind(this)(item, index)}
+            <TouchableOpacity onPress={() => this._onHeaderItemPress.bind(this)(item)}
                 activeOpacity={0.8} style={{ marginStart: 8, marginVertical: 8, width: 80, alignItems: 'center' }}>
                 <View style={{ height: 60, width: 60, borderRadius: 30 }}>
                     <Image style={{ height: 60, width: 60, borderRadius: 30, borderWidth: 1, borderColor: 'lightgray' }}  source={{uri: item.image }} />
@@ -145,28 +131,13 @@ export default class ConversationsScreen extends React.Component {
 
     _renderItem = ({ item, index, section }) => {
         return (
-            // <View style={{ paddingVertical: 0, paddingHorizontal: 0, backgroundColor: 'transparent', flex: 1 }}>
             <ConversationItem
                 style={{ borderRadius: 10, marginHorizontal: 8, marginVertical: 2, }}
                 onPressItem={() => this._onPress(item, index, section)}
                 item={item}
             />
-            // </View>
         );
     }
-
-    renderSeparator = () => {
-        return (
-            <View
-                style={{
-                    height: 1,
-                    width: "100%",
-                    backgroundColor: "#CED0CE",
-                    //   marginLeft: "14%"
-                }}
-            />
-        );
-    };
 
     renderListHeader = () => {
         return (
@@ -190,12 +161,8 @@ export default class ConversationsScreen extends React.Component {
                     sections={this.state.items}
                     renderItem={this._renderItem.bind(this)}
                     keyExtractor={(item, index) => `${index}`}
-                    refreshing={this.state.isRefreshing}
-                    onRefresh={this.handleRefresh}
-                    // onEndReached={this.handleLoadMore}
-                    // onEndThreshold={0}
                     renderSectionHeader={({ section: { title } }) => (
-                        <View style={{ backgroundColor: 'black', borderRadius: 6, marginHorizontal: 8, marginVertical: 2, padding: 8 }}>
+                        <View style={{ backgroundColor: 'black', padding: 10, paddingHorizontal: 16 }}>
                             <Text style={{ fontWeight: '400', color: 'white', fontSize: 14 }}>{title}</Text>
                         </View>
                     )}

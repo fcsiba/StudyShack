@@ -1,6 +1,6 @@
 
 import { AsyncStorage } from 'react-native';
-import { networkUtils } from '../utils';
+import { networkUtils, firebaseUtils } from '../utils';
 
 class AppStateManager {
 
@@ -16,6 +16,21 @@ class AppStateManager {
     name: 'Sample User',
     phone: '',
     username: '',
+    token: '',
+    type: '',
+    subjects: [],
+    rate: {
+      price: '',
+      currancy: 'PKR',
+      period: 'HOURLY'
+    },
+    about: '',
+    hours: [],
+    links: {
+      facebook: '',
+      linkedin: ''
+    }
+
   };
 
   setUser(user){
@@ -29,6 +44,19 @@ class AppStateManager {
     this.user.name = user.name || '';
     this.user.phone = user.phone || '';
     this.user.username = user.username || '';
+    this.user.token = user.token || '';
+  }
+
+  getUserDetails(){
+    // firebaseUtils.
+  }
+
+  login(){
+    firebaseUtils.Auth.signInWithEmailAndPassword("", "").then((value) => {
+
+    }).catch((reason) => {
+
+    })
   }
 
 }

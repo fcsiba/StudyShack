@@ -1,16 +1,25 @@
 
-class StringUtils {
+class ArrayUtils {
 
-    static shared = new StringUtils()
+    static shared = new ArrayUtils()
 
-    getString() {
+    getAtring() {
 
 
         
     }
 
+    arraysEqual(array1, array2) {
+        for (var i = 0; i < array1.length; i++) {
+            if (array2.includes(array1[i])){
+                return true
+            }
+        }
+        return false;
+    }
+
 
 }
-let stringUtils = StringUtils.shared;
-export { stringUtils }
+let arrayUtils = ArrayUtils.shared;
+export { arrayUtils }
 
