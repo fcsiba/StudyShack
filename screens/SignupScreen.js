@@ -36,6 +36,8 @@ export default class SignupScreen extends Component {
         price: null,
         password: null,
         fullname: null,
+        latitude: null,
+        longitude: null,
         errors: [],
         loading: false,
         isTeacher: false,
@@ -46,7 +48,7 @@ export default class SignupScreen extends Component {
 
     handleSignUp() {
         const { navigation } = this.props;
-        const { email, address, password, fullname, isTeacher, price, selectedSubjects } = this.state;
+        const { email, address, password, fullname, isTeacher, price, selectedSubjects, latitude, longitude } = this.state;
         const errors = [];
 
         Keyboard.dismiss();
@@ -56,6 +58,8 @@ export default class SignupScreen extends Component {
         if (!email) errors.push('email');
         if (!address && isTeacher) errors.push('address');
         if (!price && isTeacher) errors.push('price');
+        if (!latitude && isTeacher) errors.push('latitude');
+        if (!longitude && isTeacher) errors.push('longitude');
         if (!password) errors.push('password');
         if (!fullname) errors.push('fullname');
         if (selectedSubjects.length === 0 && isTeacher) errors.push('subjects');
@@ -78,8 +82,8 @@ export default class SignupScreen extends Component {
                     image: appStateManager.user.image,
                     rating: 5.0,
                     latlong: {
-                        latitude: 24.932264,
-                        longitude: 67.17092
+                        latitude: latitude,
+                        longitude: longitude
                     },
                     address: address,
                     rate: {
@@ -257,6 +261,24 @@ export default class SignupScreen extends Component {
                                 style={[styles.input, hasErrors('price')]}
                                 defaultValue={this.state.price}
                                 onChangeText={text => this.setState({ price: text })}
+                            />
+                        }
+                        {this.state.isTeacher &&
+                            <Input
+                                label="Latitude"
+                                error={hasErrors('latitude')}
+                                style={[styles.input, hasErrors('latitude')]}
+                                defaultValue={this.state.latitude}
+                                onChangeText={text => this.setState({ latitude: text })}
+                            />
+                        }
+                        {this.state.isTeacher &&
+                            <Input
+                                label="Longitude"
+                                error={hasErrors('longitude')}
+                                style={[styles.input, hasErrors('longitude')]}
+                                defaultValue={this.state.longitude}
+                                onChangeText={text => this.setState({ longitude: text })}
                             />
                         }
                         <Input

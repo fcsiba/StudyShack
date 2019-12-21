@@ -57,6 +57,17 @@ export default class TeacherHomeScreen extends React.Component {
 
   }
 
+  componentDidMount(){
+    var key = appStateManager.user.id
+    firebaseUtils.geoFire.set(
+      key, [24.933264, 67.110920],
+    ).then(function() {
+      console.log("Provided keys have been added to GeoFire");
+    }, function(error) {
+      console.log("Error: " + error);
+    });
+  }
+
   chatAction (){
     const { navigate } = this.props.navigation;
     navigate('Conversations');
