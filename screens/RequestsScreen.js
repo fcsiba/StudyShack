@@ -74,6 +74,7 @@ export default class RequestsScreen extends React.Component {
             const { navigate } = this.props.navigation;
             item.name = item.title
             // item.isAccepted = true
+            
             // this.setState({isAccepted: true, bookButtonTitle: 'Accepted'})
             navigate('Chat', { item: item, type: item.type || appStateManager.user.type || 'user' });
             
